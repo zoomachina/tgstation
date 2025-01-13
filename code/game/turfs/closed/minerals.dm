@@ -895,6 +895,8 @@
 	icon = MAP_SWITCH('icons/turf/walls/rock_wall.dmi', 'icons/turf/mining.dmi')
 	base_icon_state = "rock_wall"
 	smoothing_flags = SMOOTH_BITMASK | SMOOTH_BORDER
+	// The chance for mythril to spawn when the ore is mined.
+	var/mythril_prob = 10
 
 /turf/closed/mineral/strong/attackby(obj/item/I, mob/user, params)
 	if(!ishuman(user))
@@ -928,7 +930,7 @@
 	H.mind?.adjust_experience(/datum/skill/mining, 100) //yay!
 
 /turf/closed/mineral/strong/proc/drop_ores()
-	if(prob(10))
+	if(prob(mythril_prob))
 		new /obj/item/stack/sheet/mineral/mythril(src, 5)
 	else
 		new /obj/item/stack/sheet/mineral/adamantine(src, 5)
@@ -938,5 +940,28 @@
 
 /turf/closed/mineral/strong/ex_act(severity, target)
 	return FALSE
+
+/turf/closed/mineral/strong/mythril
+	name = "mythril ore"
+	desc = "A chunk of rock. \
+		You can see Mythril's alluring glow through basalt - \
+		only the most experienced miners may acquire the enchanted metal."
+	mythril_prob = 100 // Guaranteed to spawn mythril when mined
+	// Icon path of the mythril ore overlay
+	var/mythril_icon = 'icons/turf/mining.dmi'
+	// Icon state of the mythril ore overlay
+	var/mythril_icon_state = "mythril"
+
+/turf/closed/mineral/strong/mythril/Initialize(mapload)
+	. = ..()
+	update_appearance()
+
+/turf/closed/mineral/strong/mythril/update_overlays()
+	. = ..()
+	var/image/mythril_overlay = image(mythril_icon, src, icon_state=mythril_icon_state)
+	mythril_overlay.layer = FLOAT_LAYER
+	mythril_overlay.plane = FLOAT_PLANE
+	mythril_overlay.blend_mode = BLEND_OVERLAY
+	. += mythril_overlay
 
 #undef MINING_MESSAGE_COOLDOWN
